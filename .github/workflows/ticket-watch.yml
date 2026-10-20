@@ -1,1 +1,26 @@
+name: Youth Lates ticket watcher
 
+on:
+  schedule:
+    - cron: "*/5 * * * *"   # every 5 minutes (GitHub may delay this a little at busy times)
+  workflow_dispatch: {}      # lets you trigger a manual run from the Actions tab
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          pip install playwright requests
+          playwright install --with-deps chromium
+
+      - name: Check ticket status
+        env:
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+        run: python3 check_tickets.py
